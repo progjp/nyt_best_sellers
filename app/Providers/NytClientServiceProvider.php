@@ -16,6 +16,7 @@ class NytClientServiceProvider extends ServiceProvider
             return new NytClientService(
                 config('nyt-service.base_url'),
                 config('nyt-service.api_key'),
+                config('nyt-service.cache_ttl'),
             );
         });
     }

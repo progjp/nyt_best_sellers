@@ -30,7 +30,7 @@ class NytBestsellersTest extends TestCase
         $this->assertObjectHasProperty('author', $data[0]);
         $this->assertObjectHasProperty('contributor_note', $data[0]);
         $this->assertObjectHasProperty('price', $data[0]);
-        $this->assertSame(0, $data[0]->price);
+        $this->assertEquals(0.0, $data[0]->price);
         $this->assertObjectHasProperty('age_group', $data[0]);
         $this->assertObjectHasProperty('publisher', $data[0]);
         $this->assertObjectHasProperty('publisher', $data[0]);
@@ -41,8 +41,8 @@ class NytBestsellersTest extends TestCase
         $this->assertObjectHasProperty('isbn13', $data[0]->isbns[0]);
         $this->assertObjectHasProperty('ranks_history', $data[0]);
         $this->assertIsArray($data[0]->ranks_history);
-        $this->assertEquals('0399178570', $data[0]->ranks_history[0]->primaryISBN10);
-        $this->assertEquals('9780399178573', $data[0]->ranks_history[0]->primaryISBN13);
+        $this->assertEquals('0399178570', $data[0]->ranks_history[0]->primary_isbn10);
+        $this->assertEquals('9780399178573', $data[0]->ranks_history[0]->primary_isbn13);
         $this->assertCount(20, $data);
 
         $response->assertStatus(200);

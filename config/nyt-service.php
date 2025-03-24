@@ -5,4 +5,5 @@ return [
     'app_id' => env('NYT_API_APP_ID'),
     'api_key' => env('NYT_API_KEY'),
     'secret_key' => env('NYT_API_SECRET'),
+    'cache_ttl' => env('NYT_API_CACHE_TTL', 60),
 ];

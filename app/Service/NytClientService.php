@@ -20,6 +20,7 @@ class NytClientService
     public function __construct(
         private readonly string $baseUri,
         public readonly string  $apiKey,
+        private readonly int $cacheTtl = 60,
     )
     {
     }
@@ -33,21 +34,9 @@ class NytClientService
 
         $params = $bestSellersDTO->toArray();
         $params['api-key'] = $this->apiKey;
-        $cacheKey = 'api_response_' . md5(json_encode($params));
 
         try {
-            $response = Http::get($endpoint, $params);
-
-            if(Cache::store('redis')->has($cacheKey))
-            {
-                return $this->convertToDTO(Cache::store('redis')->get($cacheKey));
-            }
-
-            if ($response->successful()) {
-                return $this->convertToDTO($response->json());
-            }
-
-            throw new Exception('Invalid response from API: ' . $response->getStatusCode());
+            return $this->convertToDTO($this->getApiData($endpoint, $params));
         } catch (Exception $e) {
             throw new Exception('Error fetching data from API: ' . $e->getMessage());
         }
@@ -55,7 +44,8 @@ class NytClientService
 
     public function convertToDTO(array $data): Collection
     {
-        $books = collect($data['results'])->map(function ($bookData) {
+        $books = collect($data['results']);
+        $books->map(function ($bookData) {
             $isbns = collect($bookData['isbns'])->map(function ($isbnData) {
                 return new IsbnDTO(
                     isbn10: $isbnData['isbn10'],
@@ -109,5 +99,28 @@ class NytClientService
         });
 
         return $books;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getApiData(string $endpoint, array $params): array
+    {
+        ksort($params);
+        $cacheKey = 'api_response_' . md5(json_encode($params));
+
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $response = Http::get($endpoint, $params);
+
+        if ($response->successful()) {
+            Cache::put($cacheKey, $response->json(), $this->cacheTtl);
+        } else {
+            throw new Exception('Invalid response from API: ' . $response->getStatusCode());
+        }
+
+        return $response->json();
     }
 }
